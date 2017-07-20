@@ -4,6 +4,9 @@ using System.Text;
 
 namespace LabCC
 {
+    /// <summary>
+    /// Tuple Structure to storing two related values.
+    /// </summary>
     public struct Tuple
     {
         public double item1;
@@ -16,6 +19,9 @@ namespace LabCC
         }
     }
 
+    /// <summary>
+    /// Point Structure.
+    /// </summary>
     public struct Point
     {
         public double x;
@@ -46,12 +52,20 @@ namespace LabCC
             return new Point2D(p.x, p.z);
         }
 
+        /// <summary>
+        /// Calculates Euclidean distance between two points in 3D.
+        /// </summary>
+        /// <param name="p">Other point.</param>
+        /// <returns>Calculated distance.</returns>
         public double Distance(Point p)
         {
             return Math.Sqrt((p.x - x) * (p.x - x) + (p.y - y) * (p.y - y) + (p.z - z) * (p.z - z));
         }
     }
 
+    /// <summary>
+    /// Point2D Structure.
+    /// </summary>
     public struct Point2D
     {
         public double x;
@@ -76,6 +90,9 @@ namespace LabCC
         }
     }
 
+    /// <summary>
+    /// Vector3 Structure.
+    /// </summary>
     public struct Vector3
     {
         public double x;
@@ -89,11 +106,23 @@ namespace LabCC
             z = _z;
         }
 
+        /// <summary>
+        /// Calculates DotProduct of two vectors in 3D.
+        /// </summary>
+        /// <param name="p1">Vector 1.</param>
+        /// <param name="p2">Vector 2.</param>
+        /// <returns>Calculated DotProduct.</returns>
         public static double DotProduct(Vector3 p1, Vector3 p2)
         {
             return p1.x * p2.x + p1.y * p2.y + p1.z * p2.z;
         }
 
+        /// <summary>
+        /// Calculates CrossProduct of two vectors in 3D.
+        /// </summary>
+        /// <param name="v1">Vector 1.</param>
+        /// <param name="v2">Vector 2.</param>
+        /// <returns>Calculated CrossProduct.</returns>
         public static Vector3 CrossProduct(Vector3 v1, Vector3 v2)
         {
             double x = v1.y * v2.z - v2.y * v1.z;
@@ -114,6 +143,9 @@ namespace LabCC
         }
     }
 
+    /// <summary>
+    /// Vector2 Structure.
+    /// </summary>
     public struct Vector2
     { 
         public double x;
@@ -136,11 +168,15 @@ namespace LabCC
         }
     }
 
+    /// <summary>
+    /// Segment Structure.
+    /// </summary>
     public struct Segment
     {
         private Point start;
         private Point end;
 
+        /* Static value to represent NullSegment */
         public static Segment None = new Segment(Point.None, Point.None);
 
         public Segment(Point _start, Point _end)
@@ -170,6 +206,12 @@ namespace LabCC
             end.y = y;
         }
 
+        /// <summary>
+        /// Indicates that two segments are intersected.
+        /// Function checks if two points of other segment are placed on different sides of current segment.
+        /// </summary>
+        /// <param name="segment">Other segment.</param>
+        /// <returns>True if intersection exists. False if not.</returns>
         public bool IsIntersection(Segment segment)
         {
             Point p1 = GetStart();
@@ -178,6 +220,7 @@ namespace LabCC
             Point start = segment.GetStart();
             Point end = segment.GetEnd();
 
+            /* Calculating values indicating (same) / (not same) side od segment */
             double p1Site = (end.x - start.x) * (p1.z - start.z) - (p1.x - start.x) * (end.z - start.z);
             double p2Site = (end.x - start.x) * (p2.z - start.z) - (p2.x - start.x) * (end.z - start.z);
 
@@ -199,6 +242,11 @@ namespace LabCC
             return true;
         }
 
+        /// <summary>
+        /// Calculates the intersection point of two segments.
+        /// </summary>
+        /// <param name="segment">Segment to intersect.</param>
+        /// <returns>Intersection Point.</returns>
         public Point GetIntersectionPoint(Segment segment)
         {
             Point2D d1 = new Point2D(GetEnd().x - GetStart().x, GetEnd().z - GetStart().z);
@@ -213,6 +261,11 @@ namespace LabCC
             return new Point(GetStart().x + (t * d1.x), double.MaxValue, GetStart().z + (t * d1.y));
         }
 
+        /// <summary>
+        /// Calculates the perpendicular segment on given point.
+        /// </summary>
+        /// <param name="point">Point where created segment must intersect existing.</param>
+        /// <returns>Perpendicular Segment.</returns>
         public Segment GetPerpendicular(Point point)
         {
             Point start = GetPerpendicularPart(GetStart(), GetEnd(), point);
@@ -221,6 +274,13 @@ namespace LabCC
             return new Segment(start, end);
         }
 
+        /// <summary>
+        /// Calculates one-sited perpendicular segment.
+        /// </summary>
+        /// <param name="start">Start point of segment.</param>
+        /// <param name="end">End point of segment.</param>
+        /// <param name="point">Point where created segment must intersect existing.</param>
+        /// <returns>The other point of one-sided perpendicular segment. First is third parameter.</returns>
         private Point GetPerpendicularPart(Point start, Point end, Point point)
         {
             Vector2 vectorSegment = new Vector2(end.x - start.x, end.z - start.z);
@@ -232,6 +292,9 @@ namespace LabCC
         }
     }
 
+    /// <summary>
+    /// Level Structure.
+    /// </summary>
     public struct Level
     {
         private double currentLevel;
@@ -254,6 +317,11 @@ namespace LabCC
         }
     }
 
+    /// <summary>
+    /// LevelManager Class:
+    /// 
+    ///     * Manages the levels.
+    /// </summary>
     public class LevelManager
     {
         private List<Level> levels;
@@ -268,10 +336,14 @@ namespace LabCC
             return levels;
         }
 
+        /// <summary>
+        /// Creates levels based on solid's triangle's segments.
+        /// </summary>
+        /// <param name="segments">Solid's segments.</param>
         public void CreateLevels(List<Segment> segments)
         {
             Tuple minMax = GetHeigthLimits(segments);
-            List<Plane> planes = GetLevelPlanes(minMax);
+            List<Plane> planes = GetLevelsPlanes(minMax);
 
             foreach (Plane plane in planes)
             {
@@ -291,6 +363,11 @@ namespace LabCC
             levels.Reverse();
         }
 
+        /// <summary>
+        /// Calculates heigth's limits for levels.
+        /// </summary>
+        /// <param name="segments">Solid's segments.</param>
+        /// <returns>Tuple with minimum and maximum value of level.</returns>
         private Tuple GetHeigthLimits(List<Segment> segments)
         {
             double minimum = double.MaxValue;
@@ -314,7 +391,12 @@ namespace LabCC
             return new Tuple(minimum + 0.00005, maximum);
         }
 
-        private List<Plane> GetLevelPlanes(Tuple minMax)
+        /// <summary>
+        /// Calculates level's planes.
+        /// </summary>
+        /// <param name="minMax">Tuple with minimum and maximum value of level.</param>
+        /// <returns>List of level's planes.</returns>
+        private List<Plane> GetLevelsPlanes(Tuple minMax)
         {
             List<Plane> resultLevels = new List<Plane>();
 
@@ -336,6 +418,12 @@ namespace LabCC
             return resultLevels;
         }
 
+        /// <summary>
+        /// Calculates level's segments based on intersection points.
+        /// Points are calculated by intersection solid's segments with levels.
+        /// </summary>
+        /// <param name="levelPoint">Points to create segments.</param>
+        /// <returns>List of level segments.</returns>
         private List<Segment> GetLevelSegments(List<Point> levelPoint)
         {
             List<Segment> levelSegments = new List<Segment>();
@@ -347,6 +435,9 @@ namespace LabCC
         }
     }
 
+    /// <summary>
+    /// Plane Structure.
+    /// </summary>
     public struct Plane
     {
         public Point p1;
@@ -365,6 +456,11 @@ namespace LabCC
             p3 = _p3;
         }
 
+        /// <summary>
+        /// Indicates that current plane intersect given segment.
+        /// </summary>
+        /// <param name="segment">Givem segment.</param>
+        /// <returns>True if intersection exists. False if not.</returns>
         public bool IsIntersection(Segment segment)
         {
             if(segment.GetStart().y > p2.y && segment.GetEnd().y < p2.y)
@@ -376,6 +472,12 @@ namespace LabCC
             return false;
         }
 
+        /// <summary>
+        ///  Calculates the intersection point of current plane and given segment. 
+        /// </summary>
+        /// <param name="segment">Given segment.</param>
+        /// <param name="intersectionPoint">(OUT) Intersection point.</param>
+        /// <returns>IntersectionType.</returns>
         public IntersectionType GetIntersectionPoint(Segment segment, out Point intersectionPoint)
         {
             intersectionPoint = Point.None;

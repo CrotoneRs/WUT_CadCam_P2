@@ -6,6 +6,11 @@ using System.Text;
 
 namespace LabCC
 {
+    /// <summary>
+    /// GradientCurve Class:
+    /// 
+    ///     * Manages the curve.
+    /// </summary>
     public class GradientCurve
     {
         private List<Segment> curveSegments;
@@ -20,29 +25,43 @@ namespace LabCC
             curveSegments = new List<Segment>();
         }
 
+        /// <summary>
+        /// Creates the gradient curve.
+        /// </summary>
+        /// <param name="levels">All solid's levels.</param>
+        /// <param name="swModel">Solid's model to drowing.</param>
         public void Make(List<Level> levels, ModelDoc2 swModel)
         {
+            /* Getting starting point and segment */
             Segment segment = new Segment();
             Point point = GetStartingPoint(PointType.RANDOM, levels[0], out segment);
 
+            /* Iterating through levels */
             for (int i = 0; i < levels.Count - 1; i++)
             {
                 double distance = double.MaxValue;
 
+                /* Getting perpendicular segment to one given */
                 Segment perpendicular = segment.GetPerpendicular(point);
                 perpendicular.SetEndY(levels[i + 1].GetLevel());
 
+                /* Iterating through next level's segments */
                 foreach (Segment nextSegment in levels[i + 1].GetSegments())
+                    /* Determining if segments intersect - there's always only one proper segment (max two of them at all) */
                     if (perpendicular.IsIntersection(nextSegment) && nextSegment.IsIntersection(perpendicular))
                     {
+                        /* Getting intersection point of segments */
                         Point p = perpendicular.GetIntersectionPoint(nextSegment);
                         p.y = levels[i + 1].GetLevel();
 
                         double currentDistance = point.Distance(p);
 
+                        /* Determining if proper segment has been found */
                         if (currentDistance < distance)
                         {
                             distance = currentDistance;
+
+                            /* Adding segment to gradient curve */
                             curveSegments.Add(new Segment(point, p));
 
                             segment = nextSegment;
@@ -52,6 +71,13 @@ namespace LabCC
             }
         }
 
+        /// <summary>
+        /// Finds starting point for gradient curve.
+        /// </summary>
+        /// <param name="type">Random and Specific types allowed.</param>
+        /// <param name="level">Level to search.</param>
+        /// <param name="segment">(OUT) Found segment.</param>
+        /// <returns>Found point.</returns>
         private Point GetStartingPoint(PointType type, Level level, out Segment segment)
         {
             switch (type)
@@ -74,6 +100,7 @@ namespace LabCC
                     }
                 case PointType.SPECIFIC:
                     {
+                        /* Values taken from SolidWorks */
                         Point start = new Point(-0.02248, 0.02750, 0.00598);
                         Point end = new Point(-0.02177, 0.02750, 0.00826);
 
@@ -91,6 +118,10 @@ namespace LabCC
             return Point.None;
         }
 
+        /// <summary>
+        /// Drawing gradient curve.
+        /// </summary>
+        /// <param name="swModel">Solid's model.</param>
         public void Draw(ModelDoc2 swModel)
         {
             swModel.SetAddToDB(true);
@@ -112,6 +143,11 @@ namespace LabCC
             swModel.SetDisplayWhenAdded(true);
         }
 
+        /// <summary>
+        /// Drawing levels.
+        /// </summary>
+        /// <param name="swModel">Solid's model.</param>
+        /// <param name="levels">Levels to draw.</param>
         public void DrawLevels(ModelDoc2 swModel, List<Level> levels)
         {
             swModel.SetAddToDB(true);
@@ -132,6 +168,11 @@ namespace LabCC
             swModel.SetDisplayWhenAdded(true);
         }
 
+        /// <summary>
+        /// Drawing segments.
+        /// </summary>
+        /// <param name="swModel">Solid's model.</param>
+        /// <param name="segment">Segment to draw.</param>
         private void DrawSegment(ModelDoc2 swModel, Segment segment)
         {
             swModel.SetAddToDB(true);

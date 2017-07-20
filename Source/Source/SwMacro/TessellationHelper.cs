@@ -6,6 +6,11 @@ using System.Diagnostics;
 
 namespace LabCC
 {
+    /// <summary>
+    /// Tesselation Maker:
+    /// 
+    ///     * Downloaded from SolidWorks API Documentation and applied to the problem
+    /// </summary>
     public class TessellationHelper
     {
         public SldWorks swApp;
@@ -25,6 +30,7 @@ namespace LabCC
             System.Object vBodies;
             System.Array aBodies;
 
+            /* Acquiring solid's bodies */
             vBodies = swPart.GetBodies2((int)swBodyType_e.swAllBodies, false);
             aBodies = (System.Array)vBodies;
 
@@ -58,6 +64,7 @@ namespace LabCC
                     swTessellation.NeedVertexNormal = true;
                     swTessellation.ImprovedQuality = true;
 
+                    /* Proper Tesselation */
                     swTessellation.MatchType = (int)swTesselationMatchType_e.swTesselationMatchFacetTopology;
                     bResult = swTessellation.Tessellate();
 
@@ -70,6 +77,7 @@ namespace LabCC
 
                     swFace = (Face2)swBody.GetFirstFace();
 
+                    /* Getting all solid's triangles */
                     while (swFace != null)
                     {
                         aFacetIds = (int[])swTessellation.GetFaceFacets(swFace);
@@ -87,6 +95,7 @@ namespace LabCC
                                 aVertexCoords1 = (double[])swTessellation.GetVertexPoint(aVertexIds[0]);
                                 aVertexCoords2 = (double[])swTessellation.GetVertexPoint(aVertexIds[1]);
 
+                                /* Creating segments */
                                 segments.Add(new Segment(aVertexCoords1, aVertexCoords2));
                             }
                         }
